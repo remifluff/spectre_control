@@ -8,10 +8,6 @@ use nannou::image::open;
 use nannou::prelude::*;
 use nannou::wgpu::Texture;
 
-pub mod shader_backend;
-use shader_backend::bindgroups::MouseUniform;
-use shader_backend::ShaderModel;
-
 pub mod shader_ui;
 use shader_ui::FluffUi;
 
@@ -34,11 +30,10 @@ pub const SERIAL_DEBUG: bool = false;
 fn main() { nannou::app(controller).update(update).run(); }
 
 struct Model {
-    ui:            FluffUi,
-    count:         i32,
-    shader_model:  ShaderModel,
-    mouse_uniform: MouseUniform,
-    port:          SerialHandler,
+    ui:    FluffUi,
+    count: i32,
+
+    port: SerialHandler,
 }
 
 fn controller(app: &App) -> Model {
@@ -105,7 +100,6 @@ fn controller(app: &App) -> Model {
     let window = app.main_window();
     let (x, y) = window.inner_size_pixels();
     let dim = UVec2::new(x, y);
-    let mouse_uniform = MouseUniform::new(app, dim);
 
     //serial stuff
 
@@ -133,19 +127,11 @@ fn controller(app: &App) -> Model {
         .map(|res| res.map(|file| file.path()))
         .collect::<Result<Vec<_>, io::Error>>()
         .unwrap();
-    let shader_model = ShaderModel::new(shader_paths, &app, &image_texture);
+    // let shader_model = ShaderModel::new(shader_paths, &app, &image_texture);
 
-    //setup ui
-    let row_names: Vec<_> =
-        shader_model.shader_fragments.iter().map(|frag| frag.name.as_str()).collect();
+    let ui = FluffUi::new(app, &row_lables, &col_lables);
 
-    let col_names: Vec<_> =
-        shader_model.get_parameters().iter().map(|param| param.name.as_str()).collect();
-
-    let ui = FluffUi::new(app, &row_names, &col_names);
-    // let ui = FluffUi::new(app, &row_lables, &col_lables);
-
-    Model { shader_model, ui, count: 30, mouse_uniform, port }
+    Model { ui, count: 30, port }
 }
 
 fn update(app: &App, model: &mut Model, update: Update) {
@@ -162,27 +148,6 @@ fn update(app: &App, model: &mut Model, update: Update) {
     // }
 
     // shader stuff
-    connect_ui_with_engine(&mut model.shader_model, &model.ui);
-    model.shader_model.update(app);
-    model.mouse_uniform.update_mouse(app);
-}
-
-fn connect_ui_with_engine(shader_model: &mut ShaderModel, ui: &FluffUi) {
-    let ui_val = ui.get_cell_values();
-    let mut backend_val = shader_model.get_mut_val();
-
-    for (val, ROW, column) in ui_val.iter() {
-        *(backend_val[*ROW][*column]) = *val;
-    }
-
-    //link ui draw frames with shader draw frames
-    let mut backend_frames = shader_model.get_mut_frames();
-    let frame_count = backend_frames.len();
-    let ui_frames = ui.get_draw_frames(frame_count);
-
-    for (i, elem) in ui_frames.iter().enumerate() {
-        *backend_frames[i] = *elem;
-    }
 }
 
 fn event_fn(app: &App, model: &mut Model, event: WindowEvent) { model.ui.event_handler(&event); }
@@ -192,8 +157,6 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     draw.background().color(BLACK);
     draw.to_frame(app, &frame).unwrap();
-
-    model.shader_model.draw(app, &frame, &model.mouse_uniform, draw);
 
     model.ui.draw(app, &frame);
 }
