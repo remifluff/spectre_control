@@ -2,7 +2,7 @@
 #[cfg(feature = "std")]
 //imports ------------------
 use std::path::Path;
-use std::{fs, io, usize};
+use std::{env, fs, io, usize};
 
 use nannou::image::open;
 use nannou::prelude::*;
@@ -107,7 +107,11 @@ fn controller(app: &App) -> Model {
         println!("{:?}", path);
     }
 
-    let mut port = SerialHandler::new(PORT_NAME, BAUDRATE, SERIAL_DEBUG);
+    let args: Vec<_> = env::args().collect();
+    if args.len() > 1 {
+        println!("The first argument is {}", args[1]);
+    }
+    let mut port = SerialHandler::new(PORT_NAME, BAUDRATE, false);
 
     //setup shader model
     let path = app.assets_path().unwrap().join("happy-tree.png");
@@ -140,7 +144,7 @@ fn update(app: &App, model: &mut Model, update: Update) {
     let output_string = model.ui.get_serial_output(app);
 
     let ascii = output_string.as_ascii_str().unwrap();
-    print!("{}", ascii);
+    // print!("{}", ascii);
 
     model.port.write(ascii);
     // if !output_string.is_empty() {
