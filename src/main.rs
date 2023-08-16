@@ -22,9 +22,9 @@ pub use serial2::SerialPort;
 use ascii::AsAsciiStr;
 
 //Constants -----
-const PORT_NAME: &str = "/dev/tty";
+const PORT_DEFAULT: &str = "/dev/tty";
 pub const BAUDRATE: u32 = 115200;
-pub const SERIAL_DEBUG: bool = false;
+pub const SERIAL_DEBUG: bool = true;
 
 //code ---------
 fn main() { nannou::app(controller).update(update).run(); }
@@ -102,16 +102,12 @@ fn controller(app: &App) -> Model {
     let dim = UVec2::new(x, y);
 
     //serial stuff
-
-    for path in SerialPort::available_ports().unwrap() {
-        println!("{:?}", path);
-    }
-
+    SerialHandler::print_avaliable_ports();
     let args: Vec<_> = env::args().collect();
-    if args.len() > 1 {
-        println!("The first argument is {}", args[1]);
-    }
-    let mut port = SerialHandler::new(PORT_NAME, BAUDRATE, false);
+
+    let port_name = if args.len() > 1 { &args[1] } else { PORT_DEFAULT };
+    println!("attempting to open port: {}", port_name);
+    let mut port = SerialHandler::new(port_name, BAUDRATE, SERIAL_DEBUG);
 
     //setup shader model
     let path = app.assets_path().unwrap().join("happy-tree.png");
