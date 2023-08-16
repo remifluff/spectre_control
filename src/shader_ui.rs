@@ -35,7 +35,6 @@ pub struct FluffUi {
     // The type used to resize our texture to the window texture.
     texture_reshaper: wgpu::TextureReshaper,
     dynamic_image:    DynamicImage,
-    frames:           Vec<Entity>,
 }
 
 impl FluffUi {
@@ -93,7 +92,7 @@ impl FluffUi {
             dst_format,
         );
 
-        let bounds = &screen.pad(10.0);
+        let bounds = &screen.pad(100.0);
         // let bounds = bounds.first().unwrap();
 
         let default_bounds = Rect::from_w_h(10.0, 10.0);
@@ -113,21 +112,6 @@ impl FluffUi {
                 Fill(Rgb::from_format(BLACK)),
             )
         };
-
-        //make the column for preview Frames
-        let frames: Vec<_> = row_names
-            .iter()
-            .map(|_| {
-                world.spawn((
-                    Stroke { weight: line_weight, colour: Rgb::from_format(WHITE) },
-                    default_bounds,
-                ))
-            })
-            .collect();
-        let mut frame_group = vec![world.spawn((Spacer,))];
-        frame_group.extend(frames.clone());
-
-        let frames_group = system_vertical_group(&mut world, frame_group, bounds);
 
         // make the colum of row titles
 
@@ -168,7 +152,6 @@ impl FluffUi {
         let row_names = system_vertical_group(&mut world, row_names, bounds);
         let mut v_groups = vec![];
 
-        v_groups.push(frames_group);
         v_groups.push(row_names);
 
         for col in more_column {
@@ -202,25 +185,7 @@ impl FluffUi {
             texture_capturer,
             texture_reshaper,
             dynamic_image,
-            frames,
         }
-    }
-
-    pub fn get_draw_frames(&self, frame_count: usize) -> Vec<Rect> {
-        for f in &self.frames {
-            self.world.query_one::<(&Bounds)>(*f).unwrap();
-        }
-
-        let r = self.screen;
-
-        let bounds = self.screen.pad(100.0).divide_columns(2);
-        let r = bounds.last().unwrap();
-
-        self.screen.pad(100.0).divide_columns(frame_count as u32);
-        self.frames
-            .iter()
-            .map(|f| self.world.query_one::<(&Bounds)>(*f).unwrap().get().unwrap().shape)
-            .collect()
     }
 
     pub fn event_handler(&mut self, app: &App, event: &WindowEvent) -> () {
@@ -415,7 +380,7 @@ struct WindowRect;
 
 pub fn system_resize_window(world: &mut World, app: &App) {
     let screen = app.window_rect();
-    let rect = screen.pad(10.0);
+    let rect = screen.pad(100.0);
 
     let mut id_group = vec![];
     for (id, (window, mut bounds)) in &mut world.query::<(&WindowRect, &mut Bounds)>() {
