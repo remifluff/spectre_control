@@ -93,8 +93,8 @@ impl FluffUi {
             dst_format,
         );
 
-        let bounds = screen.pad(100.0).divide_columns(2);
-        let bounds = bounds.first().unwrap();
+        let bounds = &screen.pad(10.0);
+        // let bounds = bounds.first().unwrap();
 
         let default_bounds = Rect::from_w_h(10.0, 10.0);
 
@@ -152,7 +152,7 @@ impl FluffUi {
 
                 let cell = world.spawn((
                     default_bounds,
-                    c1,
+                    c2,
                     SerialUpdate(true),
                     Index { row: i, column: j },
                     Focus(false),
@@ -176,7 +176,12 @@ impl FluffUi {
             v_groups.push(v);
         }
 
-        system_horizontal_group(&mut world, v_groups, bounds);
+        world.spawn((
+            Group { children: v_groups, orentation: Orientation::Horizontal },
+            Bounds { shape: bounds.clone(), update: true },
+            WindowRect,
+            NeedsRefresh,
+        ));
 
         Self {
             world,
@@ -218,7 +223,7 @@ impl FluffUi {
             .collect()
     }
 
-    pub fn event_handler(&mut self, event: &WindowEvent) -> () {
+    pub fn event_handler(&mut self, app: &App, event: &WindowEvent) -> () {
         match *event {
             MouseWheel(delta, phase) => {
                 let change = match delta {
@@ -232,7 +237,22 @@ impl FluffUi {
                 system_button_pressed(&mut self.world, mouse);
             }
             MouseReleased(_) => (),
-            _ => (),
+            Moved(_) => (),
+            KeyPressed(_) => (),
+            KeyReleased(_) => (),
+            ReceivedCharacter(_) => (),
+            MouseMoved(_) => (),
+            MouseEntered => (),
+            MouseExited => (),
+            Resized(_) => system_resize_window(&mut self.world, app),
+            HoveredFile(_) => (),
+            DroppedFile(_) => (),
+            HoveredFileCancelled => (),
+            Touch(_) => (),
+            TouchPressure(_) => (),
+            Focused => (),
+            Unfocused => (),
+            Closed => (),
         }
     }
 
@@ -389,6 +409,23 @@ struct Index {
 struct Headings {
     row:    Entity,
     column: Entity,
+}
+
+struct WindowRect;
+
+pub fn system_resize_window(world: &mut World, app: &App) {
+    let screen = app.window_rect();
+    let rect = screen.pad(10.0);
+
+    let mut id_group = vec![];
+    for (id, (window, mut bounds)) in &mut world.query::<(&WindowRect, &mut Bounds)>() {
+        bounds.shape = rect;
+        bounds.update = true;
+        id_group.push(id);
+    }
+    for id in id_group {
+        world.insert_one(id, NeedsRefresh);
+    }
 }
 pub fn system_vertical_group(world: &mut World, entitys: Vec<Entity>, rect: &Rect) -> Entity {
     world.spawn((

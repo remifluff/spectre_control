@@ -150,7 +150,9 @@ fn update(app: &App, model: &mut Model, update: Update) {
     // shader stuff
 }
 
-fn event_fn(app: &App, model: &mut Model, event: WindowEvent) { model.ui.event_handler(&event); }
+fn event_fn(app: &App, model: &mut Model, event: WindowEvent) {
+    model.ui.event_handler(app, &event);
+}
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = &app.draw();
