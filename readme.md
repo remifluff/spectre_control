@@ -1,7 +1,7 @@
-#Basic Control System for the Open EMS prototype
+# Basic Control System for the Open EMS prototype
 
 
-#Running
+# Running
 To run the project, use:
 
 `cargo run --release`
