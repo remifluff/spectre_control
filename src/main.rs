@@ -17,12 +17,12 @@ use sub_divide::SubdivideExt;
 pub mod serial_handler;
 use serial_handler::SerialHandler;
 
-pub use serial2::SerialPort;
-
 use ascii::AsAsciiStr;
 
 //Constants -----
-const PORT_DEFAULT: &str = "/dev/tty";
+const PORT_DEFAULT: &str = "/dev/tty.usbmodem142903901";
+// const PORT_DEFAULT: &str = "/dev/tty";
+
 pub const BAUDRATE: u32 = 115200;
 pub const SERIAL_DEBUG: bool = true;
 
@@ -106,8 +106,20 @@ fn controller(app: &App) -> Model {
     let args: Vec<_> = env::args().collect();
 
     let port_name = if args.len() > 1 { &args[1] } else { PORT_DEFAULT };
-    println!("attempting to open port: {}", port_name);
-    let mut port = SerialHandler::new(port_name, BAUDRATE, SERIAL_DEBUG);
+
+    let baud_rate: u32 = if args.len() > 2 {
+        match &args[2].parse::<u32>() {
+            Ok(b) => *b,
+            Err(_) => {
+                println!("second argument must be an unsigned integer");
+                BAUDRATE
+            }
+        }
+    } else {
+        BAUDRATE
+    };
+
+    let mut port = SerialHandler::new(port_name, baud_rate, SERIAL_DEBUG);
 
     //setup shader model
     let path = app.assets_path().unwrap().join("happy-tree.png");
