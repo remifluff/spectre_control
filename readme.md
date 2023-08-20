@@ -12,7 +12,7 @@ To run the project, clone the repo and use:
 
 you can also specify what serial port to try and connect to by passing it as an argument:
 
-`cargo run --release <serial_port_path>`
+`cargo run --release <serial_port_path, baudrate>`
 
 On Unix systems, the name parameter must be a path to a TTY device. On Windows, it must be the name of a COM device, such as COM1, COM2, etc.
 
@@ -26,9 +26,11 @@ for example:
 
 `cargo run --release /dev/tty`
 
+`cargo run --release /dev/tty 115200`
+
 or
 
-`cargo run --release \.\COM10`
+`cargo run --release \.\COM10 9600`
 
 
 
