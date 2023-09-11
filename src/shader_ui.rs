@@ -511,8 +511,8 @@ pub fn system_print_value(world: &World) -> String {
         if update.0 {
             serial_output.push_str(&format!(
                 "{:02}:{:02}:{}",
-                index.row,
                 index.column,
+                index.row,
                 cell.bool_ascii()
             ));
             serial_output.push_str("\n");
