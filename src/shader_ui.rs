@@ -462,13 +462,12 @@ pub fn system_draw_connecting_lines(world: &World, draw: &Draw) {
     for (id, (value, focus, headings, bounds)) in
         &mut world.query::<(&mut Cell, &Focus, &Headings, &Bounds)>()
     {
-        let (mut x, mut y) = (
-            world.query_one::<(&Bounds)>(headings.row).unwrap(),
-            world.query_one::<(&Bounds)>(headings.column).unwrap(),
-        );
-        let (row_bounds, col_bounds) = (x.get().unwrap(), y.get().unwrap());
-
         if value.visible() {
+            let (mut x, mut y) = (
+                world.query_one::<(&Bounds)>(headings.row).unwrap(),
+                world.query_one::<(&Bounds)>(headings.column).unwrap(),
+            );
+            let (row_bounds, col_bounds) = (x.get().unwrap(), y.get().unwrap());
             draw.line()
                 .start(bounds.shape.xy())
                 .end(row_bounds.shape.xy())
@@ -485,13 +484,13 @@ pub fn system_draw_connecting_lines(world: &World, draw: &Draw) {
     for (id, (value, focus, headings, bounds)) in
         &mut world.query::<(&mut Cell, &Focus, &Headings, &Bounds)>()
     {
-        let (mut x, mut y) = (
-            world.query_one::<(&Bounds)>(headings.row).unwrap(),
-            world.query_one::<(&Bounds)>(headings.column).unwrap(),
-        );
-        let (row_bounds, col_bounds) = (x.get().unwrap(), y.get().unwrap());
-
         if focus.0 {
+            let (mut x, mut y) = (
+                world.query_one::<(&Bounds)>(headings.row).unwrap(),
+                world.query_one::<(&Bounds)>(headings.column).unwrap(),
+            );
+            let (row_bounds, col_bounds) = (x.get().unwrap(), y.get().unwrap());
+
             draw.line()
                 .start(bounds.shape.xy())
                 .end(row_bounds.shape.xy())
@@ -511,8 +510,8 @@ pub fn system_print_value(world: &World) -> String {
         if update.0 {
             serial_output.push_str(&format!(
                 "{:02}:{:02}:{}",
-                index.column,
                 index.row,
+                index.column,
                 cell.bool_ascii()
             ));
             serial_output.push_str("\n");
